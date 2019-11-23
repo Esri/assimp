@@ -2,8 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
-
+Copyright (c) 2006-2017, assimp team
 
 All rights reserved.
 
@@ -93,7 +92,7 @@ public:
     Token(const char* sbegin, const char* send, TokenType type, unsigned int line, unsigned int column);
 
     /** construct a binary token */
-    Token(const char* sbegin, const char* send, TokenType type, size_t offset);
+    Token(const char* sbegin, const char* send, TokenType type, unsigned int offset);
 
     ~Token();
 
@@ -102,6 +101,7 @@ public:
         return std::string(begin(),end());
     }
 
+public:
     bool IsBinary() const {
         return column == BINARY_MARKER;
     }
@@ -118,14 +118,14 @@ public:
         return type;
     }
 
-    size_t Offset() const {
+    unsigned int Offset() const {
         ai_assert(IsBinary());
         return offset;
     }
 
     unsigned int Line() const {
         ai_assert(!IsBinary());
-        return static_cast<unsigned int>(line);
+        return line;
     }
 
     unsigned int Column() const {
@@ -147,8 +147,8 @@ private:
     const TokenType type;
 
     union {
-        size_t line;
-        size_t offset;
+        const unsigned int line;
+        unsigned int offset;
     };
     const unsigned int column;
 };
@@ -178,7 +178,7 @@ void Tokenize(TokenList& output_tokens, const char* input);
  * @param input_buffer Binary input buffer to be processed.
  * @param length Length of input buffer, in bytes. There is no 0-terminal.
  * @throw DeadlyImportError if something goes wrong */
-void TokenizeBinary(TokenList& output_tokens, const char* input, size_t length);
+void TokenizeBinary(TokenList& output_tokens, const char* input, unsigned int length);
 
 
 } // ! FBX

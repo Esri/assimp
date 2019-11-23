@@ -2,8 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
-
+Copyright (c) 2006-2017, assimp team
 
 All rights reserved.
 
@@ -46,6 +45,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ASSIMP_BUILD_NO_FBX_IMPORTER
 
+
 #ifdef ASSIMP_BUILD_NO_OWN_ZLIB
 #   include <zlib.h>
 #else
@@ -66,6 +66,7 @@ using namespace Assimp;
 using namespace Assimp::FBX;
 
 namespace {
+
 
     // ------------------------------------------------------------------------------------------------
     // signal parse error, this is always unrecoverable. Throws DeadlyImportError.
@@ -102,7 +103,6 @@ namespace {
     T SafeParse(const char* data, const char* end) {
         // Actual size validation happens during Tokenization so
         // this is valid as an assertion.
-        (void)(end);
         ai_assert(static_cast<size_t>(end - data) >= sizeof(T));
         T result = static_cast<T>(0);
         ::memcpy(&result, data, sizeof(T));
@@ -117,7 +117,7 @@ namespace FBX {
 Element::Element(const Token& key_token, Parser& parser)
 : key_token(key_token)
 {
-    TokenPtr n = nullptr;
+    TokenPtr n = NULL;
     do {
         n = parser.AdvanceToNextToken();
         if(!n) {
@@ -212,6 +212,7 @@ Scope::~Scope()
     }
 }
 
+
 // ------------------------------------------------------------------------------------------------
 Parser::Parser (const TokenList& tokens, bool is_binary)
 : tokens(tokens)
@@ -223,11 +224,12 @@ Parser::Parser (const TokenList& tokens, bool is_binary)
     root.reset(new Scope(*this,true));
 }
 
+
 // ------------------------------------------------------------------------------------------------
 Parser::~Parser()
 {
-    // empty
 }
+
 
 // ------------------------------------------------------------------------------------------------
 TokenPtr Parser::AdvanceToNextToken()
@@ -235,11 +237,13 @@ TokenPtr Parser::AdvanceToNextToken()
     last = current;
     if (cursor == tokens.end()) {
         current = NULL;
-    } else {
+    }
+    else {
         current = *cursor++;
     }
     return current;
 }
+
 
 // ------------------------------------------------------------------------------------------------
 TokenPtr Parser::CurrentToken() const
@@ -247,11 +251,13 @@ TokenPtr Parser::CurrentToken() const
     return current;
 }
 
+
 // ------------------------------------------------------------------------------------------------
 TokenPtr Parser::LastToken() const
 {
     return last;
 }
+
 
 // ------------------------------------------------------------------------------------------------
 uint64_t ParseTokenAsID(const Token& t, const char*& err_out)
@@ -280,7 +286,7 @@ uint64_t ParseTokenAsID(const Token& t, const char*& err_out)
     unsigned int length = static_cast<unsigned int>(t.end() - t.begin());
     ai_assert(length > 0);
 
-    const char* out = nullptr;
+    const char* out;
     const uint64_t id = strtoul10_64(t.begin(),&out,&length);
     if (out > t.end()) {
         err_out = "failed to parse ID (text)";
@@ -289,6 +295,7 @@ uint64_t ParseTokenAsID(const Token& t, const char*& err_out)
 
     return id;
 }
+
 
 // ------------------------------------------------------------------------------------------------
 size_t ParseTokenAsDim(const Token& t, const char*& err_out)
@@ -326,7 +333,7 @@ size_t ParseTokenAsDim(const Token& t, const char*& err_out)
         return 0;
     }
 
-    const char* out = nullptr;
+    const char* out;
     const size_t id = static_cast<size_t>(strtoul10_64(t.begin() + 1,&out,&length));
     if (out > t.end()) {
         err_out = "failed to parse ID";
@@ -439,7 +446,7 @@ int64_t ParseTokenAsInt64(const Token& t, const char*& err_out)
     unsigned int length = static_cast<unsigned int>(t.end() - t.begin());
     ai_assert(length > 0);
 
-    const char* out = nullptr;
+    const char* out;
     const int64_t id = strtol10_64(t.begin(), &out, &length);
     if (out > t.end()) {
         err_out = "failed to parse Int64 (text)";
@@ -535,18 +542,18 @@ void ReadBinaryDataArray(char type, uint32_t count, const char*& data, const cha
     uint32_t stride = 0;
     switch(type)
     {
-        case 'f':
-        case 'i':
-            stride = 4;
-            break;
+    case 'f':
+    case 'i':
+        stride = 4;
+        break;
 
-        case 'd':
-        case 'l':
-            stride = 8;
-            break;
+    case 'd':
+    case 'l':
+        stride = 8;
+        break;
 
-        default:
-            ai_assert(false);
+    default:
+        ai_assert(false);
     };
 
     const uint32_t full_length = stride * count;
@@ -643,9 +650,9 @@ void ParseVectorDataArray(std::vector<aiVector3D>& out, const Element& el)
         if (type == 'd') {
             const double* d = reinterpret_cast<const double*>(&buff[0]);
             for (unsigned int i = 0; i < count3; ++i, d += 3) {
-                out.push_back(aiVector3D(static_cast<ai_real>(d[0]),
-                    static_cast<ai_real>(d[1]),
-                    static_cast<ai_real>(d[2])));
+                out.push_back(aiVector3D(static_cast<float>(d[0]),
+                    static_cast<float>(d[1]),
+                    static_cast<float>(d[2])));
             }
             // for debugging
             /*for ( size_t i = 0; i < out.size(); i++ ) {
@@ -963,6 +970,7 @@ void ParseVectorDataArray(std::vector<float>& out, const Element& el)
     }
 }
 
+
 // ------------------------------------------------------------------------------------------------
 // read an array of uints
 void ParseVectorDataArray(std::vector<unsigned int>& out, const Element& el)
@@ -1194,14 +1202,6 @@ std::string ParseTokenAsString(const Token& t)
     return i;
 }
 
-bool HasElement( const Scope& sc, const std::string& index ) {
-    const Element* el = sc[ index ];
-    if ( nullptr == el ) {
-        return false;
-    }
-
-    return true;
-}
 
 // ------------------------------------------------------------------------------------------------
 // extract a required element from a scope, abort if the element cannot be found
@@ -1279,6 +1279,7 @@ float ParseTokenAsFloat(const Token& t)
     return i;
 }
 
+
 // ------------------------------------------------------------------------------------------------
 // wrapper around ParseTokenAsInt() with ParseError handling
 int ParseTokenAsInt(const Token& t)
@@ -1290,6 +1291,8 @@ int ParseTokenAsInt(const Token& t)
     }
     return i;
 }
+
+
 
 // ------------------------------------------------------------------------------------------------
 // wrapper around ParseTokenAsInt64() with ParseError handling

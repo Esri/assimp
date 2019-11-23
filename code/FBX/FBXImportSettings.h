@@ -2,8 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
-
+Copyright (c) 2006-2017, assimp team
 
 All rights reserved.
 
@@ -53,22 +52,19 @@ namespace FBX {
 struct ImportSettings
 {
     ImportSettings()
-    : strictMode(true)
-    , readAllLayers(true)
-    , readAllMaterials(false)
-    , readMaterials(true)
-    , readTextures(true)
-    , readCameras(true)
-    , readLights(true)
-    , readAnimations(true)
-    , readWeights(true)
-    , preservePivots(true)
-    , optimizeEmptyAnimationCurves(true)
-    , useLegacyEmbeddedTextureNaming(false)
-    , removeEmptyBones( true )
-    , convertToMeters( false ) {
-        // empty
-    }
+        : strictMode(true)
+        , readAllLayers(true)
+        , readAllMaterials(false)
+        , readMaterials(true)
+        , readTextures(true)
+        , readCameras(true)
+        , readLights(true)
+        , readAnimations(true)
+        , readWeights(true)
+        , preservePivots(true)
+        , optimizeEmptyAnimationCurves(true)
+		, searchEmbeddedTextures(false)
+    {}
 
 
     /** enable strict mode:
@@ -143,17 +139,9 @@ struct ImportSettings
      *  The default value is true. */
     bool optimizeEmptyAnimationCurves;
 
-    /** use legacy naming for embedded textures eg: (*0, *1, *2)
-    */
-    bool useLegacyEmbeddedTextureNaming;
-
-    /** Empty bones shall be removed
-    */
-    bool removeEmptyBones;
-
-    /** Set to true to perform a conversion from cm to meter after the import
-    */
-    bool convertToMeters;
+	/** search for embedded loaded textures, where no embedded texture data is provided.
+	*  The default value is false. */
+	bool searchEmbeddedTextures;
 };
 
 

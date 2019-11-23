@@ -2,8 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
-
+Copyright (c) 2006-2017, assimp team
 
 All rights reserved.
 
@@ -69,24 +68,33 @@ LazyObject::LazyObject(uint64_t id, const Element& element, const Document& doc)
 : doc(doc)
 , element(element)
 , id(id)
-, flags() {
-    // empty
+, flags()
+{
+
 }
 
 // ------------------------------------------------------------------------------------------------
 LazyObject::~LazyObject()
 {
-    // empty
+
 }
 
 // ------------------------------------------------------------------------------------------------
 const Object* LazyObject::Get(bool dieOnError)
 {
     if(IsBeingConstructed() || FailedToConstruct()) {
-        return nullptr;
+        return NULL;
     }
 
     if (object.get()) {
+        return object.get();
+    }
+
+    // if this is the root object, we return a dummy since there
+    // is no root object int he fbx file - it is just referenced
+    // with id 0.
+    if(id == 0L) {
+        object.reset(new Object(id, element, "Model::RootNode"));
         return object.get();
     }
 
@@ -137,12 +145,6 @@ const Object* LazyObject::Get(bool dieOnError)
             if (!strcmp(classtag.c_str(),"Mesh")) {
                 object.reset(new MeshGeometry(id,element,name,doc));
             }
-            if (!strcmp(classtag.c_str(), "Shape")) {
-                object.reset(new ShapeGeometry(id, element, name, doc));
-            }
-            if (!strcmp(classtag.c_str(), "Line")) {
-                object.reset(new LineGeometry(id, element, name, doc));
-            }
         }
         else if (!strncmp(obtype,"NodeAttribute",length)) {
             if (!strcmp(classtag.c_str(),"Camera")) {
@@ -167,12 +169,6 @@ const Object* LazyObject::Get(bool dieOnError)
             }
             else if (!strcmp(classtag.c_str(),"Skin")) {
                 object.reset(new Skin(id,element,doc,name));
-            }
-            else if (!strcmp(classtag.c_str(), "BlendShape")) {
-                object.reset(new BlendShape(id, element, doc, name));
-            }
-            else if (!strcmp(classtag.c_str(), "BlendShapeChannel")) {
-                object.reset(new BlendShapeChannel(id, element, doc, name));
             }
         }
         else if ( !strncmp( obtype, "Model", length ) ) {
@@ -217,7 +213,7 @@ const Object* LazyObject::Get(bool dieOnError)
 
         // note: the error message is already formatted, so raw logging is ok
         if(!DefaultLogger::isNullLogger()) {
-            ASSIMP_LOG_ERROR(ex.what());
+            DefaultLogger::get()->error(ex.what());
         }
         return NULL;
     }
@@ -236,14 +232,15 @@ Object::Object(uint64_t id, const Element& element, const std::string& name)
 , name(name)
 , id(id)
 {
-    // empty
+
 }
 
 // ------------------------------------------------------------------------------------------------
 Object::~Object()
 {
-    // empty
+
 }
+
 
 // ------------------------------------------------------------------------------------------------
 FileGlobalSettings::FileGlobalSettings(const Document& doc, std::shared_ptr<const PropertyTable> props)
@@ -295,10 +292,11 @@ Document::~Document()
 }
 
 // ------------------------------------------------------------------------------------------------
-static const unsigned int LowerSupportedVersion = 7100;
-static const unsigned int UpperSupportedVersion = 7400;
+static const int LowerSupportedVersion = 7100;
+static const int UpperSupportedVersion = 7400;
 
-void Document::ReadHeader() {
+void Document::ReadHeader()
+{
     // Read ID objects from "Objects" section
     const Scope& sc = parser.GetRootScope();
     const Element* const ehead = sc["FBXHeaderExtension"];
@@ -348,15 +346,14 @@ void Document::ReadGlobalSettings()
 {
     const Scope& sc = parser.GetRootScope();
     const Element* const ehead = sc["GlobalSettings"];
-    if ( nullptr == ehead || !ehead->Compound() ) {
-        DOMWarning( "no GlobalSettings dictionary found" );
+    if(!ehead || !ehead->Compound()) {
+        DOMWarning("no GlobalSettings dictionary found");
+
         globals.reset(new FileGlobalSettings(*this, std::make_shared<const PropertyTable>()));
         return;
     }
 
-    std::shared_ptr<const PropertyTable> props = GetPropertyTable( *this, "", *ehead, *ehead->Compound(), true );
-
-    //double v = PropertyGet<float>( *props.get(), std::string("UnitScaleFactor"), 1.0 );
+    std::shared_ptr<const PropertyTable> props = GetPropertyTable(*this, "", *ehead, *ehead->Compound(), true);
 
     if(!props) {
         DOMError("GlobalSettings dictionary contains no property table");
@@ -364,6 +361,7 @@ void Document::ReadGlobalSettings()
 
     globals.reset(new FileGlobalSettings(*this, props));
 }
+
 
 // ------------------------------------------------------------------------------------------------
 void Document::ReadObjects()
@@ -390,6 +388,7 @@ void Document::ReadObjects()
         }
 
         const char* err;
+
         const uint64_t id = ParseTokenAsID(*tok[0], err);
         if(err) {
             DOMError(err,el.second);
@@ -471,6 +470,8 @@ void Document::ReadPropertyTemplates()
     }
 }
 
+
+
 // ------------------------------------------------------------------------------------------------
 void Document::ReadConnections()
 {
@@ -482,6 +483,7 @@ void Document::ReadConnections()
     }
 
     uint64_t insertionOrder = 0l;
+
     const Scope& sconns = *econns->Compound();
     const ElementCollection conns = sconns.GetCollection("C");
     for(ElementMap::const_iterator it = conns.first; it != conns.second; ++it) {
@@ -490,9 +492,7 @@ void Document::ReadConnections()
 
         // PP = property-property connection, ignored for now
         // (tokens: "PP", ID1, "Property1", ID2, "Property2")
-        if ( type == "PP" ) {
-            continue;
-        }
+        if(type == "PP") continue;
 
         const uint64_t src = ParseTokenAsID(GetRequiredToken(el,1));
         const uint64_t dest = ParseTokenAsID(GetRequiredToken(el,2));
@@ -519,10 +519,11 @@ void Document::ReadConnections()
     }
 }
 
+
 // ------------------------------------------------------------------------------------------------
 const std::vector<const AnimationStack*>& Document::AnimationStacks() const
 {
-    if (!animationStacksResolved.empty() || animationStacks.empty()) {
+    if (!animationStacksResolved.empty() || !animationStacks.size()) {
         return animationStacksResolved;
     }
 
@@ -540,17 +541,19 @@ const std::vector<const AnimationStack*>& Document::AnimationStacks() const
     return animationStacksResolved;
 }
 
+
 // ------------------------------------------------------------------------------------------------
 LazyObject* Document::GetObject(uint64_t id) const
 {
     ObjectMap::const_iterator it = objects.find(id);
-    return it == objects.end() ? nullptr : (*it).second;
+    return it == objects.end() ? NULL : (*it).second;
 }
 
 #define MAX_CLASSNAMES 6
 
 // ------------------------------------------------------------------------------------------------
-std::vector<const Connection*> Document::GetConnectionsSequenced(uint64_t id, const ConnectionMap& conns) const
+std::vector<const Connection*> Document::GetConnectionsSequenced(uint64_t id,
+    const ConnectionMap& conns) const
 {
     std::vector<const Connection*> temp;
 
@@ -567,6 +570,7 @@ std::vector<const Connection*> Document::GetConnectionsSequenced(uint64_t id, co
     return temp; // NRVO should handle this
 }
 
+
 // ------------------------------------------------------------------------------------------------
 std::vector<const Connection*> Document::GetConnectionsSequenced(uint64_t id, bool is_src,
     const ConnectionMap& conns,
@@ -575,17 +579,17 @@ std::vector<const Connection*> Document::GetConnectionsSequenced(uint64_t id, bo
 
 {
     ai_assert(classnames);
-    ai_assert( count != 0 );
-    ai_assert( count <= MAX_CLASSNAMES);
+    ai_assert(count != 0 && count <= MAX_CLASSNAMES);
 
-    size_t lengths[MAX_CLASSNAMES];
+    size_t lenghts[MAX_CLASSNAMES];
 
     const size_t c = count;
     for (size_t i = 0; i < c; ++i) {
-        lengths[ i ] = strlen(classnames[i]);
+        lenghts[i] = strlen(classnames[i]);
     }
 
     std::vector<const Connection*> temp;
+
     const std::pair<ConnectionMap::const_iterator,ConnectionMap::const_iterator> range =
         conns.equal_range(id);
 
@@ -600,8 +604,8 @@ std::vector<const Connection*> Document::GetConnectionsSequenced(uint64_t id, bo
 
         for (size_t i = 0; i < c; ++i) {
             ai_assert(classnames[i]);
-            if(static_cast<size_t>(std::distance(key.begin(),key.end())) == lengths[i] && !strncmp(classnames[i],obtype,lengths[i])) {
-                obtype = nullptr;
+            if(static_cast<size_t>(std::distance(key.begin(),key.end())) == lenghts[i] && !strncmp(classnames[i],obtype,lenghts[i])) {
+                obtype = NULL;
                 break;
             }
         }
@@ -617,39 +621,48 @@ std::vector<const Connection*> Document::GetConnectionsSequenced(uint64_t id, bo
     return temp; // NRVO should handle this
 }
 
+
 // ------------------------------------------------------------------------------------------------
 std::vector<const Connection*> Document::GetConnectionsBySourceSequenced(uint64_t source) const
 {
     return GetConnectionsSequenced(source, ConnectionsBySource());
 }
 
-// ------------------------------------------------------------------------------------------------
-std::vector<const Connection*> Document::GetConnectionsBySourceSequenced(uint64_t src, const char* classname) const
-{
-    const char* arr[] = {classname};
-    return GetConnectionsBySourceSequenced(src, arr,1);
-}
+
 
 // ------------------------------------------------------------------------------------------------
-std::vector<const Connection*> Document::GetConnectionsBySourceSequenced(uint64_t source, 
-        const char* const* classnames, size_t count) const
+std::vector<const Connection*> Document::GetConnectionsBySourceSequenced(uint64_t dest,
+    const char* classname) const
+{
+    const char* arr[] = {classname};
+    return GetConnectionsBySourceSequenced(dest, arr,1);
+}
+
+
+
+// ------------------------------------------------------------------------------------------------
+std::vector<const Connection*> Document::GetConnectionsBySourceSequenced(uint64_t source,
+    const char* const* classnames, size_t count) const
 {
     return GetConnectionsSequenced(source, true, ConnectionsBySource(),classnames, count);
 }
 
+
 // ------------------------------------------------------------------------------------------------
 std::vector<const Connection*> Document::GetConnectionsByDestinationSequenced(uint64_t dest,
-        const char* classname) const
+    const char* classname) const
 {
     const char* arr[] = {classname};
     return GetConnectionsByDestinationSequenced(dest, arr,1);
 }
+
 
 // ------------------------------------------------------------------------------------------------
 std::vector<const Connection*> Document::GetConnectionsByDestinationSequenced(uint64_t dest) const
 {
     return GetConnectionsSequenced(dest, ConnectionsByDestination());
 }
+
 
 // ------------------------------------------------------------------------------------------------
 std::vector<const Connection*> Document::GetConnectionsByDestinationSequenced(uint64_t dest,
@@ -659,9 +672,10 @@ std::vector<const Connection*> Document::GetConnectionsByDestinationSequenced(ui
     return GetConnectionsSequenced(dest, false, ConnectionsByDestination(),classnames, count);
 }
 
+
 // ------------------------------------------------------------------------------------------------
 Connection::Connection(uint64_t insertionOrder,  uint64_t src, uint64_t dest, const std::string& prop,
-        const Document& doc)
+    const Document& doc)
 
 : insertionOrder(insertionOrder)
 , prop(prop)
@@ -674,11 +688,13 @@ Connection::Connection(uint64_t insertionOrder,  uint64_t src, uint64_t dest, co
     ai_assert(!dest || doc.Objects().find(dest) != doc.Objects().end());
 }
 
+
 // ------------------------------------------------------------------------------------------------
 Connection::~Connection()
 {
-    // empty
+
 }
+
 
 // ------------------------------------------------------------------------------------------------
 LazyObject& Connection::LazySourceObject() const
@@ -688,6 +704,7 @@ LazyObject& Connection::LazySourceObject() const
     return *lazy;
 }
 
+
 // ------------------------------------------------------------------------------------------------
 LazyObject& Connection::LazyDestinationObject() const
 {
@@ -696,6 +713,7 @@ LazyObject& Connection::LazyDestinationObject() const
     return *lazy;
 }
 
+
 // ------------------------------------------------------------------------------------------------
 const Object* Connection::SourceObject() const
 {
@@ -703,6 +721,7 @@ const Object* Connection::SourceObject() const
     ai_assert(lazy);
     return lazy->Get();
 }
+
 
 // ------------------------------------------------------------------------------------------------
 const Object* Connection::DestinationObject() const
@@ -716,3 +735,4 @@ const Object* Connection::DestinationObject() const
 } // !Assimp
 
 #endif
+

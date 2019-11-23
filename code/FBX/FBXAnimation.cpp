@@ -2,8 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
-
+Copyright (c) 2006-2017, assimp team
 
 All rights reserved.
 
@@ -88,16 +87,17 @@ AnimationCurve::AnimationCurve(uint64_t id, const Element& element, const std::s
     }
 }
 
+
 // ------------------------------------------------------------------------------------------------
 AnimationCurve::~AnimationCurve()
 {
-    // empty
+
 }
 
+
 // ------------------------------------------------------------------------------------------------
-AnimationCurveNode::AnimationCurveNode(uint64_t id, const Element& element, const std::string& name, 
-        const Document& doc, const char* const * target_prop_whitelist /*= NULL*/, 
-        size_t whitelist_size /*= 0*/)
+AnimationCurveNode::AnimationCurveNode(uint64_t id, const Element& element, const std::string& name, const Document& doc,
+    const char* const * target_prop_whitelist /*= NULL*/, size_t whitelist_size /*= 0*/)
 : Object(id, element, name)
 , target()
 , doc(doc)
@@ -105,8 +105,8 @@ AnimationCurveNode::AnimationCurveNode(uint64_t id, const Element& element, cons
     const Scope& sc = GetRequiredScope(element);
 
     // find target node
-    const char* whitelist[] = {"Model","NodeAttribute","Deformer"};
-    const std::vector<const Connection*>& conns = doc.GetConnectionsBySourceSequenced(ID(),whitelist,3);
+    const char* whitelist[] = {"Model","NodeAttribute"};
+    const std::vector<const Connection*>& conns = doc.GetConnectionsBySourceSequenced(ID(),whitelist,2);
 
     for(const Connection* con : conns) {
 
@@ -154,16 +154,18 @@ AnimationCurveNode::AnimationCurveNode(uint64_t id, const Element& element, cons
     props = GetPropertyTable(doc,"AnimationCurveNode.FbxAnimCurveNode",element,sc,false);
 }
 
+
 // ------------------------------------------------------------------------------------------------
 AnimationCurveNode::~AnimationCurveNode()
 {
-    // empty
+
 }
+
 
 // ------------------------------------------------------------------------------------------------
 const AnimationCurveMap& AnimationCurveNode::Curves() const
 {
-    if ( curves.empty() ) {
+    if(curves.empty()) {
         // resolve attached animation curves
         const std::vector<const Connection*>& conns = doc.GetConnectionsByDestinationSequenced(ID(),"AnimationCurve");
 
@@ -193,6 +195,7 @@ const AnimationCurveMap& AnimationCurveNode::Curves() const
     return curves;
 }
 
+
 // ------------------------------------------------------------------------------------------------
 AnimationLayer::AnimationLayer(uint64_t id, const Element& element, const std::string& name, const Document& doc)
 : Object(id, element, name)
@@ -204,11 +207,13 @@ AnimationLayer::AnimationLayer(uint64_t id, const Element& element, const std::s
     props = GetPropertyTable(doc,"AnimationLayer.FbxAnimLayer",element,sc, true);
 }
 
+
 // ------------------------------------------------------------------------------------------------
 AnimationLayer::~AnimationLayer()
 {
-    // empty
+
 }
+
 
 // ------------------------------------------------------------------------------------------------
 AnimationCurveNodeList AnimationLayer::Nodes(const char* const * target_prop_whitelist /*= NULL*/,
@@ -293,13 +298,14 @@ AnimationStack::AnimationStack(uint64_t id, const Element& element, const std::s
     }
 }
 
+
 // ------------------------------------------------------------------------------------------------
 AnimationStack::~AnimationStack()
 {
-    // empty
+
 }
 
 } //!FBX
 } //!Assimp
 
-#endif // ASSIMP_BUILD_NO_FBX_IMPORTER
+#endif
