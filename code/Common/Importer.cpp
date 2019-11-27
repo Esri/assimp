@@ -627,7 +627,14 @@ const aiScene* Importer::ReadFile( const char* _pFile, unsigned int pFlags)
         uint32_t fileSize = 0;
         if (fileIO)
         {
-            fileSize = boost::filesystem::file_size(pFile);
+            if (fileIO->FileSize() > 0)
+            {
+                fileSize = fileIO->FileSize();
+            }
+            else
+            {
+                fileSize = boost::filesystem::file_size(pFile);
+            }
             pimpl->mIOHandler->Close( fileIO );
         }
 
