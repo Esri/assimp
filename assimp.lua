@@ -412,6 +412,30 @@ project "assimp"
     -- configuration { "android_arm64_release" }
 
     -- -------------------------------------------------------------
+    -- configuration { "android_x64_debug" }
+    -- -------------------------------------------------------------
+
+    -- common configuration settings
+
+    dofile (_BUILD_DIR .. "/static_android_x64_debug.lua")
+
+    -- project specific configuration settings
+
+    -- configuration { "android_x64_debug" }
+
+    -- -------------------------------------------------------------
+    -- configuration { "android_x64_release" }
+    -- -------------------------------------------------------------
+
+    -- common configuration settings
+
+    dofile (_BUILD_DIR .. "/static_android_x64_release.lua")
+
+    -- project specific configuration settings
+
+    -- configuration { "android_x64_release" }
+
+    -- -------------------------------------------------------------
   end
 
   if (_TARGET_IS_WINUWP) then
