@@ -54,6 +54,7 @@ test/readlinetest*
 # Python
 __pycache__
 *.log
+*.vcxproj
 *.filters
 *.tlog
 Assimp.sdf
