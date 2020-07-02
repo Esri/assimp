@@ -73,17 +73,16 @@ project "assimp"
     "code/**.hpp",
     "contrib/irrXML/irrXML.h", -- Required by Collada (DAE) reader
     "contrib/irrXML/irrXML.cpp",
-    "contrib/rapidjson/include/**.h",
   }
 
   includedirs {
-    "include",
+    _3RDPARTY_DIR .. "/boost",
+    _3RDPARTY_DIR .. "/rapidjson/include",
+    _3RDPARTY_DIR .. "/zlib",
     "code",
     "contrib/irrXML",
-    "contrib/rapidjson/include",
+    "include",
     prjDir,
-    prjDir .. "/../boost",
-    prjDir .. "/../zlib",
   }
 
   -- -------------------------------------------------------------
