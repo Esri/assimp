@@ -73,6 +73,7 @@ project "assimp"
     "code/**.hpp",
     "contrib/irrXML/irrXML.h", -- Required by Collada (DAE) reader
     "contrib/irrXML/irrXML.cpp",
+    "include/**.h"
   }
 
   includedirs {
