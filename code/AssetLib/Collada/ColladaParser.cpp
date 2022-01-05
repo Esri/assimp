@@ -1229,8 +1229,11 @@ void ColladaParser::ReadEffectColor(XmlNode &node, aiColor4D &pColor, Sampler &p
             // don't write it. It will be the default UV channel in case it's missing.
             XmlParser::getStdStrAttribute(currentNode, "texcoord", pSampler.mUVChannel);
 
+            // The line below was disabled by jere9309 for backwards compatibility. Disabling this makes the default
+            // color match assimp version 3.1
+
             // as we've read texture, the color needs to be 1,1,1,1
-            pColor = aiColor4D(1.f, 1.f, 1.f, 1.f);
+            //pColor = aiColor4D(1.f, 1.f, 1.f, 1.f);
         } else if (currentName == "technique") {
             std::string profile;
             XmlParser::getStdStrAttribute(currentNode, "profile", profile);
