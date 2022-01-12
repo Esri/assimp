@@ -62,12 +62,6 @@ DefaultIOStream::~DefaultIOStream()
 }
 
 // ----------------------------------------------------------------------------------
-std::string DefaultIOStream::GetFilename()
-{
-  return mFilename;
-}
-
-// ----------------------------------------------------------------------------------
 size_t DefaultIOStream::Read(void* pvBuffer,
     size_t pSize,
     size_t pCount)
