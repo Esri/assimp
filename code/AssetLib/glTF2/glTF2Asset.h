@@ -77,6 +77,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <rapidjson/error/en.h>
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/schema.h>
+#include <rapidjson/stringbuffer.h>
 
 #if (__GNUC__ == 8 && __GNUC_MINOR__ >= 0)
 #   pragma GCC diagnostic pop

@@ -211,8 +211,14 @@ void GetImporterInstanceList(std::vector<BaseImporter *> &out) {
     // Some importers may be unimplemented or otherwise unsuitable for general use
     // in their current state. Devs can set ASSIMP_ENABLE_DEV_IMPORTERS in their
     // local environment to enable them, otherwise they're left out of the registry.
+
+#ifdef RTC_WINDOWS_UNIVERSAL
+    // std::getenv is not available on WinUWP
+    bool devImportersEnabled = false;
+#else
     const char *envStr = std::getenv("ASSIMP_ENABLE_DEV_IMPORTERS");
     bool devImportersEnabled = envStr && strcmp(envStr, "0");
+#endif
 
     // Ensure no unused var warnings if all uses are #ifndef'd away below:
     (void)devImportersEnabled;

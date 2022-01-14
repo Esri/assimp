@@ -196,7 +196,10 @@ zlib_filefunc_def IOSystem2Unzip::get(IOSystem *pIOHandler) {
     zlib_filefunc_def mapping;
 
     mapping.zopen_file = (open_file_func)open;
-    mapping.zopendisk_file = (opendisk_file_func)opendisk;
+
+    // Not used in assimp 5.1.6. Requires a newer version of minizip
+    // than the one included in zlib 1.2.11
+    //mapping.zopendisk_file = (opendisk_file_func)opendisk;
     mapping.zread_file = (read_file_func)read;
     mapping.zwrite_file = (write_file_func)write;
     mapping.ztell_file = (tell_file_func)tell;
