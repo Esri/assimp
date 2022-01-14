@@ -180,7 +180,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #else
     #define AI_WONT_RETURN
     #define AI_FORCE_INLINE inline
->>>>>>> 8134cae998ec0e3a44a6ec8330b681f3981107b7
 #endif // (defined _MSC_VER)
 
 #ifdef __GNUC__
