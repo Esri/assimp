@@ -6,7 +6,7 @@ configuration { "*" }
 
 uuid "BA8CFAE5-30DB-4480-909F-2FF454EFA675"
 
--- The only formats we want are 3DS, DAE, OBJ, GLTF, FBX
+-- The only formats we want are 3DS, COLLADA (DAE), OBJ, GLTF, FBX
 defines {
   "ASSIMP_BUILD_NO_OWN_ZLIB",
   "ASSIMP_BUILD_NO_EXPORT",
@@ -21,6 +21,7 @@ defines {
   "ASSIMP_BUILD_NO_BLEND_IMPORTER",
   "ASSIMP_BUILD_NO_BVH_IMPORTER",
   "ASSIMP_BUILD_NO_C4D_IMPORTER",
+  "ASSIMP_BUILD_NO_COB_IMPORTER",
   "ASSIMP_BUILD_NO_CSM_IMPORTER",
   "ASSIMP_BUILD_NO_DXF_IMPORTER",
   "ASSIMP_BUILD_NO_HMP_IMPORTER",
@@ -29,6 +30,8 @@ defines {
   "ASSIMP_BUILD_NO_IRR_IMPORTER",
   "ASSIMP_BUILD_NO_LWO_IMPORTER",
   "ASSIMP_BUILD_NO_LWS_IMPORTER",
+  "ASSIMP_BUILD_NO_M3D_EXPORTER",
+  "ASSIMP_BUILD_NO_M3D_IMPORTER",
   "ASSIMP_BUILD_NO_MD2_IMPORTER",
   "ASSIMP_BUILD_NO_MD3_IMPORTER",
   "ASSIMP_BUILD_NO_MD5_IMPORTER",
@@ -47,17 +50,19 @@ defines {
   "ASSIMP_BUILD_NO_RAW_IMPORTER",
   "ASSIMP_BUILD_NO_SIB_IMPORTER",
   "ASSIMP_BUILD_NO_SMD_IMPORTER",
+  "ASSIMP_BUILD_NO_STEP_IMPORTER",
   "ASSIMP_BUILD_NO_STL_IMPORTER",
   "ASSIMP_BUILD_NO_TERRAGEN_IMPORTER",
-  "ASSIMP_BUILD_NO_X_IMPORTER",
   "ASSIMP_BUILD_NO_X3D_IMPORTER",
   "ASSIMP_BUILD_NO_XGL_IMPORTER",
+  "ASSIMP_BUILD_NO_XX_IMPORTER",
+  "ASSIMP_BUILD_NO_X_IMPORTER",
 }
 
 includedirs {
   ".",
   "code",
-  "contrib/irrXML",
+  "contrib/pugixml/src",
   "include",
   _3RDPARTY_DIR .. "/boost",
   _3RDPARTY_DIR .. "/rapidjson/include",
@@ -66,11 +71,7 @@ includedirs {
 
 files {
   "code/**.cpp",
-  "code/**.h",
-  "code/**.hpp",
-  "contrib/irrXML/irrXML.h", -- Required by Collada (DAE) reader
-  "contrib/irrXML/irrXML.cpp",
-  "include/**.h"
+  "contrib/pugixml/src/pugixml.cpp",
 }
 
 if (_PLATFORM_ANDROID) then
