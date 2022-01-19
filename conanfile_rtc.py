@@ -3,7 +3,7 @@ from conans import ConanFile
 
 class AssimpConan(ConanFile):
     name = "assimp"
-    version = "5.0.1"
+    version = "5.1.6"
     url = "https://github.com/Esri/assimp/tree/runtimecore"
     license = "https://github.com/Esri/assimp/blob/runtimecore/LICENSE"
     description = "Open Asset Import Library (short name: Assimp) is a portable Open Source library to import various well-known 3D model formats in a uniform manner."
