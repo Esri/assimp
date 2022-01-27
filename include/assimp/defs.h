@@ -160,7 +160,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #elif defined(SWIG)
 /* Do nothing, the relevant defines are all in AssimpSwigPort.i */
 #else
-#define ASSIMP_API __attribute__((visibility("default")))
+#define ASSIMP_API __attribute__((visibility("hidden")))
 #define ASSIMP_API_WINONLY
 #endif // _WIN32
 
