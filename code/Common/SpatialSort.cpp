@@ -51,7 +51,17 @@ using namespace Assimp;
 #define CHAR_BIT 8
 #endif
 
-const aiVector3D PlaneInit(0.8523f, 0.34321f, 0.5736f);
+// PlaneInit is changed for runtime branch of assimp to work around a compiler bug.
+// When whole program optimization (/GL) is turned on for MSVC v143 (v14.32-17.2)
+// incorrect code is generated for mPlaneNormal.Normalize which causes an access violation
+// 
+// To work around this PlaneInit is initialized to a unit vector so that normalize
+// does not need to be called.
+//
+// This bug can be tested with Scene_symbol_tests::distance_composite_scene_symbol_c_api_11548
+// When testing to see if a newer compiler fixes the bug,  make sure to test
+// with whole program optimization (/GL) turned on (it is not on by default for vtest)
+const aiVector3D PlaneInit(0.786867797f, 0.316861331f, 0.529563963f);
 
 // ------------------------------------------------------------------------------------------------
 // Constructs a spatially sorted representation from the given position array.
@@ -60,7 +70,8 @@ const aiVector3D PlaneInit(0.8523f, 0.34321f, 0.5736f);
 SpatialSort::SpatialSort(const aiVector3D *pPositions, unsigned int pNumPositions, unsigned int pElementOffset) :
         mPlaneNormal(PlaneInit),
         mFinalized(false) {
-    mPlaneNormal.Normalize();
+    // normalize does not need to be called because above PlaneInit was changed to unit vector
+    // mPlaneNormal.Normalize();
     Fill(pPositions, pNumPositions, pElementOffset);
 }
 
@@ -68,7 +79,8 @@ SpatialSort::SpatialSort(const aiVector3D *pPositions, unsigned int pNumPosition
 SpatialSort::SpatialSort() :
         mPlaneNormal(PlaneInit),
         mFinalized(false) {
-    mPlaneNormal.Normalize();
+    // normalize does not need to be called because above PlaneInit was changed to unit vector
+    // mPlaneNormal.Normalize();
 }
 
 // ------------------------------------------------------------------------------------------------
