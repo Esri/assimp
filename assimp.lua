@@ -65,9 +65,9 @@ includedirs {
   "contrib/pugixml/src",
   "include",
   _3RDPARTY_DIR .. "/boost",
+  _3RDPARTY_DIR .. "/minizip-ng",
   _3RDPARTY_DIR .. "/rapidjson/include",
   _3RDPARTY_DIR .. "/zlib-ng",
-  _3RDPARTY_DIR .. "/minizip-ng",
 }
 
 files {
