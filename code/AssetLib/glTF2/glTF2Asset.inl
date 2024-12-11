@@ -1628,6 +1628,22 @@ inline void Node::Read(Value &obj, Asset &r) {
                 }
             }
         }
+
+        // Read the the nodes specified under MSFT_lod extension ids and save as children node
+        if (Value *msftLodExt = FindObject(*curExtensions, "MSFT_lod")) {
+            if (Value *lodIds = FindArray(*msftLodExt, "ids")) {
+                for (unsigned int i = 0; i < lodIds->Size(); ++i) {
+                    Value &child = (*lodIds)[i];
+                    if (child.IsUint()) {
+                        // get/create the lod id as child node
+                        Ref<Node> chn = r.nodes.Retrieve(child.GetUint());
+                        if (chn) {
+                            this->children.push_back(chn);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
