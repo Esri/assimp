@@ -102,10 +102,6 @@ void Structure::Convert<CollectionObject>(
 
     ReadFieldPtr<ErrorPolicy_Fail>(dest.next, "*next", db);
     {
-        //std::shared_ptr<CollectionObject> prev;
-        //ReadFieldPtr<ErrorPolicy_Fail>(prev, "*prev", db);
-        //dest.prev = prev.get();
-
         std::shared_ptr<Object> ob;
         ReadFieldPtr<ErrorPolicy_Igno>(ob, "*ob", db);
         dest.ob = ob.get();
@@ -301,7 +297,7 @@ void Structure ::Convert<Base>(
         const FileDatabase &db) const {
     // note: as per https://github.com/assimp/assimp/issues/128,
     // reading the Object linked list recursively is prone to stack overflow.
-    // This structure converter is therefore an hand-written exception that
+    // This structure converter is therefore a hand-written exception that
     // does it iteratively.
 
     const int initial_pos = db.reader->GetCurrentPos();
@@ -569,7 +565,7 @@ void Structure ::Convert<MVert>(
         const FileDatabase &db) const {
 
     ReadFieldArray<ErrorPolicy_Fail>(dest.co, "co", db);
-    ReadFieldArray<ErrorPolicy_Fail>(dest.no, "no", db);
+    ReadFieldArray<ErrorPolicy_Warn>(dest.no, "no", db);
     ReadField<ErrorPolicy_Igno>(dest.flag, "flag", db);
     //ReadField<ErrorPolicy_Warn>(dest.mat_nr,"mat_nr",db);
     ReadField<ErrorPolicy_Igno>(dest.bweight, "bweight", db);
@@ -624,7 +620,9 @@ void Structure ::Convert<ListBase>(
         const FileDatabase &db) const {
 
     ReadFieldPtr<ErrorPolicy_Igno>(dest.first, "*first", db);
-    ReadFieldPtr<ErrorPolicy_Igno>(dest.last, "*last", db);
+    std::shared_ptr<ElemBase> last;
+    ReadFieldPtr<ErrorPolicy_Igno>(last, "*last", db);
+    dest.last = last;
 
     db.reader->IncPtr(size);
 }
@@ -648,7 +646,9 @@ void Structure ::Convert<ModifierData>(
         const FileDatabase &db) const {
 
     ReadFieldPtr<ErrorPolicy_Warn>(dest.next, "*next", db);
-    ReadFieldPtr<ErrorPolicy_Warn>(dest.prev, "*prev", db);
+    std::shared_ptr<ElemBase> prev;
+    ReadFieldPtr<ErrorPolicy_Warn>(prev, "*prev", db);
+    dest.prev = prev;
     ReadField<ErrorPolicy_Igno>(dest.type, "type", db);
     ReadField<ErrorPolicy_Igno>(dest.mode, "mode", db);
     ReadFieldArray<ErrorPolicy_Igno>(dest.name, "name", db);
@@ -772,7 +772,9 @@ void Structure ::Convert<MirrorModifierData>(
     ReadField<ErrorPolicy_Igno>(dest.axis, "axis", db);
     ReadField<ErrorPolicy_Igno>(dest.flag, "flag", db);
     ReadField<ErrorPolicy_Igno>(dest.tolerance, "tolerance", db);
-    ReadFieldPtr<ErrorPolicy_Igno>(dest.mirror_ob, "*mirror_ob", db);
+    std::shared_ptr<Object> mirror_ob;
+    ReadFieldPtr<ErrorPolicy_Igno>(mirror_ob, "*mirror_ob", db);
+    dest.mirror_ob = mirror_ob;
 
     db.reader->IncPtr(size);
 }
@@ -833,9 +835,9 @@ void Structure::Convert<CustomDataLayer>(
     ReadField<ErrorPolicy_Fail>(dest.flag, "flag", db);
     ReadField<ErrorPolicy_Fail>(dest.active, "active", db);
     ReadField<ErrorPolicy_Fail>(dest.active_rnd, "active_rnd", db);
-    ReadField<ErrorPolicy_Fail>(dest.active_clone, "active_clone", db);
-    ReadField<ErrorPolicy_Fail>(dest.active_mask, "active_mask", db);
-    ReadField<ErrorPolicy_Fail>(dest.uid, "uid", db);
+    ReadField<ErrorPolicy_Warn>(dest.active_clone, "active_clone", db);
+    ReadField<ErrorPolicy_Warn>(dest.active_mask, "active_mask", db);
+    ReadField<ErrorPolicy_Warn>(dest.uid, "uid", db);
     ReadFieldArray<ErrorPolicy_Warn>(dest.name, "name", db);
     ReadCustomDataPtr<ErrorPolicy_Fail>(dest.data, dest.type, "*data", db);
 
