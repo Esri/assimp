@@ -45,7 +45,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assimp/DefaultIOStream.h>
 #include <assimp/DefaultIOSystem.h>
 #include <assimp/ai_assert.h>
-#include <boost/nowide/cstdio.hpp>
 #include <stdlib.h>
 #include <assimp/DefaultLogger.hpp>
 
@@ -93,26 +92,43 @@ static std::string WideToUtf8(const wchar_t *in) {
 
 // ------------------------------------------------------------------------------------------------
 // Tests for the existence of a file at the given path.
-bool DefaultIOSystem::Exists(const char* pFile) const {
-    FILE* file = boost::nowide::fopen( pFile, "rb");
-    if( !file) {
+bool DefaultIOSystem::Exists(const char *pFile) const {
+#ifdef _WIN32
+    struct __stat64 filestat;
+    if (_wstat64(Utf8ToWide(pFile).c_str(), &filestat) != 0) {
+        return false;
+    }
+#else
+    FILE *file = ::fopen(pFile, "rb");
+    if (!file) {
         return false;
     }
 
     ::fclose(file);
+#endif
+
     return true;
 }
 
 // ------------------------------------------------------------------------------------------------
 // Open a new file with a given path.
-IOStream* DefaultIOSystem::Open(const char* strFile, const char* strMode)
-{
-    ai_assert(NULL != strFile);
-    ai_assert(NULL != strMode);
+IOStream *DefaultIOSystem::Open(const char *strFile, const char *strMode) {
+    ai_assert(strFile != nullptr);
+    ai_assert(strMode != nullptr);
+    FILE *file;
+#ifdef _WIN32
+    std::wstring name = Utf8ToWide(strFile);
+    if (name.empty()) {
+        return nullptr;
+    }
 
-    FILE* file = boost::nowide::fopen( strFile, strMode);
-    if( NULL == file)
-        return NULL;
+    file = ::_wfopen(name.c_str(), Utf8ToWide(strMode).c_str());
+#else
+    file = ::fopen(strFile, strMode);
+#endif
+    if (!file) {
+        return nullptr;
+    }
 
     return new DefaultIOStream(file, strFile);
 }
