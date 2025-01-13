@@ -2272,20 +2272,16 @@ void ColladaParser::ReadNodeGeometry(XmlNode &node, Node *pNode) {
     if (url[0] != '#') {
         throw DeadlyImportError("Unknown reference format");
     }
-
     Collada::MeshInstance instance;
     instance.mMeshOrController = url.c_str() + 1; // skipping the leading #
-
     for (XmlNode currentNode = node.first_child(); currentNode; currentNode = currentNode.next_sibling()) {
         const std::string &currentName = currentNode.name();
         if (currentName == "bind_material") {
             XmlNode techNode = currentNode.child("technique_common");
             if (techNode) {
-                for (XmlNode instanceMatNode = techNode.child("instance_material"); instanceMatNode; instanceMatNode = instanceMatNode.next_sibling())
-                {
+                for (XmlNode instanceMatNode = techNode.child("instance_material"); instanceMatNode; instanceMatNode = instanceMatNode.next_sibling()) {
                     const std::string &instance_name = instanceMatNode.name();
-                    if (instance_name == "instance_material")
-                    {
+                    if (instance_name == "instance_material") {
                         // read ID of the geometry subgroup and the target material
                         std::string group;
                         XmlParser::getStdStrAttribute(instanceMatNode, "symbol", group);
@@ -2296,15 +2292,14 @@ void ColladaParser::ReadNodeGeometry(XmlNode &node, Node *pNode) {
                             urlMat++;
 
                         s.mMatName = urlMat;
-                        ReadMaterialVertexInputBinding(instanceMatNode, s);
                         // store the association
                         instance.mMaterials[group] = s;
+                        ReadMaterialVertexInputBinding(instanceMatNode, s);
                     }
                 }
             }
         }
     }
-
     // store it
     pNode->mMeshes.push_back(instance);
 }
