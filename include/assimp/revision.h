@@ -21,9 +21,9 @@
 #define VER_COPYRIGHT_STR           "\xA9 2006-2023"
 
 #ifdef  NDEBUG
-#define VER_ORIGINAL_FILENAME_STR   "assimp-vc143-mt.dll"
+#define VER_ORIGINAL_FILENAME_STR   "assimp.dll"
 #else
-#define VER_ORIGINAL_FILENAME_STR   "assimp-vc143-mtd.dll"
+#define VER_ORIGINAL_FILENAME_STR   "assimp.dll"
 #endif //  NDEBUG
 
 #endif // ASSIMP_REVISION_H_INC
