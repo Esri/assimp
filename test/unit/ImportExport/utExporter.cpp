@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2021, assimp team
+Copyright (c) 2006-2024, assimp team
 
 All rights reserved.
 
@@ -55,9 +55,7 @@ public:
         // empty
     }
 
-    virtual ~TestProgressHandler() {
-        // empty
-    }
+    virtual ~TestProgressHandler() = default;
 
     bool Update(float percentage = -1.f) override {
         mPercentage = percentage;

@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2021, assimp team
+Copyright (c) 2006-2024, assimp team
 
 All rights reserved.
 
@@ -45,6 +45,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Header files, Assimp
 #include <assimp/DefaultLogger.hpp>
+#include <assimp/Base64.hpp>
 
 #ifdef ASSIMP_IMPORTER_GLTF_USE_OPEN3DGC
 // Header files, Open3DGC.
@@ -52,9 +53,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 using namespace Assimp;
-using namespace glTFCommon;
 
 namespace glTF {
+using namespace glTFCommon;
 
 #if _MSC_VER
 #pragma warning(push)
@@ -67,7 +68,7 @@ namespace glTF {
 
 template <class T>
 inline LazyDict<T>::LazyDict(Asset &asset, const char *dictId, const char *extId) :
-        mDictId(dictId), mExtId(extId), mDict(0), mAsset(asset) {
+        mDictId(dictId), mExtId(extId), mDict(nullptr), mAsset(asset) {
     asset.mDicts.push_back(this); // register to the list of dictionaries
 }
 
@@ -80,7 +81,7 @@ inline LazyDict<T>::~LazyDict() {
 
 template <class T>
 inline void LazyDict<T>::AttachToDocument(Document &doc) {
-    Value *container = 0;
+    Value *container = nullptr;
 
     if (mExtId) {
         if (Value *exts = FindObject(doc, "extensions")) {
@@ -97,7 +98,7 @@ inline void LazyDict<T>::AttachToDocument(Document &doc) {
 
 template <class T>
 inline void LazyDict<T>::DetachFromDocument() {
-    mDict = 0;
+    mDict = nullptr;
 }
 
 template <class T>
@@ -193,8 +194,8 @@ inline void Buffer::Read(Value &obj, Asset &r) {
     glTFCommon::Util::DataURI dataURI;
     if (ParseDataURI(uri, it->GetStringLength(), dataURI)) {
         if (dataURI.base64) {
-            uint8_t *data = 0;
-            this->byteLength = Util::DecodeBase64(dataURI.data, dataURI.dataLength, data);
+            uint8_t *data = nullptr;
+            this->byteLength = Base64::Decode(dataURI.data, dataURI.dataLength, data);
             this->mData.reset(data, std::default_delete<uint8_t[]>());
 
             if (statedLength > 0 && this->byteLength != statedLength) {
@@ -382,9 +383,9 @@ inline unsigned int Accessor::GetElementSize() {
 }
 
 inline uint8_t *Accessor::GetPointer() {
-    if (!bufferView || !bufferView->buffer) return 0;
+    if (!bufferView || !bufferView->buffer) return nullptr;
     uint8_t *basePtr = bufferView->buffer->GetPointer();
-    if (!basePtr) return 0;
+    if (!basePtr) return nullptr;
 
     size_t offset = byteOffset + bufferView->byteOffset;
 
@@ -513,7 +514,7 @@ inline void Image::Read(Value &obj, Asset &r) {
                 mimeType = dataURI.mediaType;
                 if (dataURI.base64) {
                     uint8_t *ptr = nullptr;
-                    mDataLength = glTFCommon::Util::DecodeBase64(dataURI.data, dataURI.dataLength, ptr);
+                    mDataLength = Base64::Decode(dataURI.data, dataURI.dataLength, ptr);
                     mData.reset(ptr);
                 }
             } else {
@@ -697,7 +698,7 @@ inline void Mesh::Read(Value &pJSON_Object, Asset &pAsset_Root) {
                     // and WEIGHT.Attribute semantics can be of the form[semantic]_[set_index], e.g., TEXCOORD_0, TEXCOORD_1, etc.
 
                     int undPos = 0;
-                    Mesh::AccessorList *vec = 0;
+                    Mesh::AccessorList *vec = nullptr;
                     if (GetAttribVector(prim, attr, vec, undPos)) {
                         size_t idx = (attr[undPos] == '_') ? atoi(attr + undPos + 1) : 0;
                         if ((*vec).size() <= idx) (*vec).resize(idx + 1);
@@ -890,12 +891,12 @@ inline void Mesh::Decode_O3DGC(const SCompression_Open3DGC &pCompression_Open3DG
     auto get_buf_offset = [](Ref<Accessor> &pAccessor) -> size_t { return pAccessor->byteOffset + pAccessor->bufferView->byteOffset; };
 
     // Indices
-    ifs.SetCoordIndex((IndicesType *const)(decoded_data + get_buf_offset(primitives[0].indices)));
+    ifs.SetCoordIndex((IndicesType *)(decoded_data + get_buf_offset(primitives[0].indices)));
     // Coordinates
-    ifs.SetCoord((o3dgc::Real *const)(decoded_data + get_buf_offset(primitives[0].attributes.position[0])));
+    ifs.SetCoord((o3dgc::Real *)(decoded_data + get_buf_offset(primitives[0].attributes.position[0])));
     // Normals
     if (size_normal) {
-        ifs.SetNormal((o3dgc::Real *const)(decoded_data + get_buf_offset(primitives[0].attributes.normal[0])));
+        ifs.SetNormal((o3dgc::Real *)(decoded_data + get_buf_offset(primitives[0].attributes.normal[0])));
     }
 
     for (size_t idx = 0, idx_end = size_floatattr.size(), idx_texcoord = 0; idx < idx_end; idx++) {
@@ -903,7 +904,7 @@ inline void Mesh::Decode_O3DGC(const SCompression_Open3DGC &pCompression_Open3DG
         case o3dgc::O3DGC_IFS_FLOAT_ATTRIBUTE_TYPE_TEXCOORD:
             if (idx_texcoord < primitives[0].attributes.texcoord.size()) {
                 // See above about absent attributes.
-                ifs.SetFloatAttribute(static_cast<unsigned long>(idx), (o3dgc::Real *const)(decoded_data + get_buf_offset(primitives[0].attributes.texcoord[idx])));
+                ifs.SetFloatAttribute(static_cast<unsigned long>(idx), (o3dgc::Real *)(decoded_data + get_buf_offset(primitives[0].attributes.texcoord[idx])));
                 idx_texcoord++;
             }
 
@@ -1113,10 +1114,6 @@ inline void AssetMetadata::Read(Document &doc) {
             ReadMember(*curProfile, "version", this->profile.version);
         }
     }
-
-    if (version.empty() || version[0] != '1') {
-        throw DeadlyImportError("GLTF: Unsupported glTF version: ", version);
-    }
 }
 
 //
@@ -1221,6 +1218,10 @@ inline void Asset::Load(const std::string &pFile, bool isBinary) {
 
     // Load the metadata
     asset.Read(doc);
+    if (!asset) {
+        return;
+    }
+
     ReadExtensionsUsed(doc);
 
     // Prepare the dictionaries

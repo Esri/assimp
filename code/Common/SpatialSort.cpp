@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2021, assimp team
+Copyright (c) 2006-2024, assimp team
 
 All rights reserved.
 
@@ -84,12 +84,6 @@ SpatialSort::SpatialSort() :
 }
 
 // ------------------------------------------------------------------------------------------------
-// Destructor
-SpatialSort::~SpatialSort() {
-    // empty
-}
-
-// ------------------------------------------------------------------------------------------------
 void SpatialSort::Fill(const aiVector3D *pPositions, unsigned int pNumPositions,
         unsigned int pElementOffset,
         bool pFinalize /*= true */) {
@@ -108,7 +102,7 @@ ai_real SpatialSort::CalculateDistance(const aiVector3D &pPosition) const {
 void SpatialSort::Finalize() {
     const ai_real scale = 1.0f / mPositions.size();
     for (unsigned int i = 0; i < mPositions.size(); i++) {
-        mCentroid += scale * mPositions[i].mPosition; 
+        mCentroid += scale * mPositions[i].mPosition;
     }
     for (unsigned int i = 0; i < mPositions.size(); i++) {
         mPositions[i].mDistance = CalculateDistance(mPositions[i].mPosition);
@@ -128,7 +122,7 @@ void SpatialSort::Append(const aiVector3D *pPositions, unsigned int pNumPosition
     for (unsigned int a = 0; a < pNumPositions; a++) {
         const char *tempPointer = reinterpret_cast<const char *>(pPositions);
         const aiVector3D *vec = reinterpret_cast<const aiVector3D *>(tempPointer + a * pElementOffset);
-        mPositions.push_back(Entry(static_cast<unsigned int>(a + initial), *vec));
+        mPositions.emplace_back(static_cast<unsigned int>(a + initial), *vec);
     }
 
     if (pFinalize) {

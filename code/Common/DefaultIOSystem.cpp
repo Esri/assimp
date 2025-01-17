@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2021, assimp team
+Copyright (c) 2006-2024, assimp team
 
 All rights reserved.
 
@@ -93,25 +93,36 @@ static std::string WideToUtf8(const wchar_t *in) {
 
 // ------------------------------------------------------------------------------------------------
 // Tests for the existence of a file at the given path.
-bool DefaultIOSystem::Exists(const char* pFile) const {
-    FILE* file = boost::nowide::fopen( pFile, "rb");
-    if( !file) {
+bool DefaultIOSystem::Exists(const char *pFile) const {
+    if (pFile == nullptr) {
         return false;
     }
+        
+#ifdef _WIN32
+    struct __stat64 filestat;
+    if (_wstat64(Utf8ToWide(pFile).c_str(), &filestat) != 0) {
+        return false;
+    }
+#else
+	struct stat statbuf;
+    stat(pFile, &statbuf);
+    // test for a regular file
+    if (!S_ISREG(statbuf.st_mode)) {
+        return false;
+    }
+#endif
 
-    ::fclose(file);
     return true;
 }
 
 // ------------------------------------------------------------------------------------------------
 // Open a new file with a given path.
-IOStream* DefaultIOSystem::Open(const char* strFile, const char* strMode)
-{
+IOStream *DefaultIOSystem::Open(const char *strFile, const char *strMode) {
     ai_assert(NULL != strFile);
     ai_assert(NULL != strMode);
 
-    FILE* file = boost::nowide::fopen( strFile, strMode);
-    if( NULL == file)
+    FILE *file = boost::nowide::fopen(strFile, strMode);
+    if (NULL == file)
         return NULL;
 
     return new DefaultIOStream(file, strFile);

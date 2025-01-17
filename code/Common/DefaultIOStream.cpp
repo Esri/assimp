@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2021, assimp team
+Copyright (c) 2006-2024, assimp team
 
 All rights reserved.
 
@@ -67,7 +67,7 @@ inline int select_fseek(FILE *file, int64_t offset, int origin) {
 
 
 
-#if defined _WIN32 && (!defined __GNUC__ || __MSVCRT_VERSION__ >= 0x0601)
+#if defined _WIN32 && (!defined __GNUC__ || !defined __CLANG__ && __MSVCRT_VERSION__ >= 0x0601)
 template <>
 inline size_t select_ftell<8>(FILE *file) {
     return (size_t)::_ftelli64(file);
@@ -78,7 +78,7 @@ inline int select_fseek<8>(FILE *file, int64_t offset, int origin) {
     return ::_fseeki64(file, offset, origin);
 }
 
-#endif // #if defined _WIN32 && (!defined __GNUC__ || __MSVCRT_VERSION__ >= 0x0601)
+#endif
 
 } // namespace
 
@@ -153,15 +153,22 @@ size_t DefaultIOStream::FileSize() const {
         //
         // See here for details:
         // https://www.securecoding.cert.org/confluence/display/seccode/FIO19-C.+Do+not+use+fseek()+and+ftell()+to+compute+the+size+of+a+regular+file
-#if defined _WIN32 && (!defined __GNUC__ || __MSVCRT_VERSION__ >= 0x0601)
-        // _stat64 does not accept utf8 strings on windows so instead use _filelengthi64 as suggesteed by the reference above
+#if defined _WIN32 && (!defined __GNUC__ || !defined __CLANG__ && __MSVCRT_VERSION__ >= 0x0601)
+        // _stat64 does not accept utf8 strings on windows so instead use _filelengthi64 as suggested by the reference above
         auto file_length = _filelengthi64(_fileno(mFile));
-        if (file_length <= 0)
-        {
-          return 0;
+        if (file_length <= 0) {
+            return 0;
         }
 
-        mCachedSize = (size_t) (file_length);
+        mCachedSize = (size_t)(file_length);
+#elif defined _WIN32
+        //  _stat32 does not accept utf8 strings on windows so instead use _filelength as suggested by the reference above
+        auto file_length = _filelength(_fileno(mFile));
+        if (file_length <= 0) {
+            return 0;
+        }
+
+        mCachedSize = (size_t)(file_length);
 #elif defined __GNUC__ || defined __APPLE__ || defined __MACH__ || defined __FreeBSD__
         struct stat fileStat;
         int err = stat(mFilename.c_str(), &fileStat);

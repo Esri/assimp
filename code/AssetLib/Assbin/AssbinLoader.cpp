@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2021, assimp team
+Copyright (c) 2006-2024, assimp team
 
 All rights reserved.
 
@@ -65,7 +65,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace Assimp;
 
-static const aiImporterDesc desc = {
+static constexpr aiImporterDesc desc = {
     "Assimp Binary Importer",
     "Gargaj / Conspiracy",
     "",
@@ -555,6 +555,10 @@ void AssbinImporter::ReadBinaryLight(IOStream *stream, aiLight *l) {
 
     l->mName = Read<aiString>(stream);
     l->mType = (aiLightSourceType)Read<unsigned int>(stream);
+
+    l->mPosition = Read<aiVector3D>(stream);
+    l->mDirection = Read<aiVector3D>(stream);
+    l->mUp = Read<aiVector3D>(stream);
 
     if (l->mType != aiLightSource_DIRECTIONAL) {
         l->mAttenuationConstant = Read<float>(stream);
