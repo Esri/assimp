@@ -49,6 +49,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assimp/ParsingUtils.h>
 #include <assimp/fast_atof.h>
 #include <assimp/material.h>
+#include <assimp/metadata.h>
 #include <assimp/types.h>
 #include <assimp/DefaultLogger.hpp>
 #include <memory>
@@ -421,6 +422,13 @@ unsigned int aiGetMaterialTextureCount(const C_STRUCT aiMaterial *pMat, C_ENUM a
     return max;
 }
 
+// ---------------------------------------------------------------------------
+// Get the metadata for the material
+C_STRUCT aiMetadata *aiGetMaterialMetadata(const C_STRUCT aiMaterial *pMat) {
+    ai_assert(pMat != nullptr);
+    return pMat->mMetaData;
+}
+
 // ------------------------------------------------------------------------------------------------
 aiReturn aiGetMaterialTexture(const C_STRUCT aiMaterial *mat,
         aiTextureType type,
@@ -478,7 +486,7 @@ static const unsigned int DefaultNumAllocated = 5;
 // ------------------------------------------------------------------------------------------------
 // Construction. Actually the one and only way to get an aiMaterial instance
 aiMaterial::aiMaterial() :
-        mProperties(nullptr), mNumProperties(0), mNumAllocated(DefaultNumAllocated) {
+        mProperties(nullptr), mNumProperties(0), mNumAllocated(DefaultNumAllocated), mMetaData(nullptr) {
     // Allocate 5 entries by default
     mProperties = new aiMaterialProperty *[DefaultNumAllocated];
 }
@@ -488,6 +496,7 @@ aiMaterial::~aiMaterial() {
     Clear();
 
     delete[] mProperties;
+    delete mMetaData;
 }
 
 // ------------------------------------------------------------------------------------------------
