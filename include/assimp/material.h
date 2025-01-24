@@ -52,6 +52,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <assimp/types.h>
 
+#include <assimp/metadata.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -833,6 +835,16 @@ public:
             aiTextureOp *op = NULL,
             aiTextureMapMode *mapmode = NULL) const;
 
+    // -------------------------------------------------------------------
+    /** Helper function to get Metadata associated with this material or nullptr if there is no metadata.
+     *  Whether any metadata is generated depends on the source file format. See the
+     * @link importer_notes @endlink page for more information on every source file
+     * format. Importers that don't document any metadata don't write any.
+     * e.g. you can get information stored in Extras and custom Extensions for materials in glTF models
+     * @return metadata for this material
+     */
+    C_STRUCT aiMetadata *GetMetadata() const;
+
     // Setters
 
     // ------------------------------------------------------------------------------
@@ -956,6 +968,9 @@ public:
 
     /** Storage allocated */
     unsigned int mNumAllocated;
+
+    /** Metadata associated with this material or nullptr if there is no metadata.*/
+    C_STRUCT aiMetadata *mMetaData;
 };
 
 // Go back to extern "C" again
@@ -1632,6 +1647,16 @@ ASSIMP_API C_ENUM aiReturn aiGetMaterialString(const C_STRUCT aiMaterial *pMat,
 // ---------------------------------------------------------------------------
 ASSIMP_API unsigned int aiGetMaterialTextureCount(const C_STRUCT aiMaterial *pMat,
         C_ENUM aiTextureType type);
+
+// ---------------------------------------------------------------------------
+/** Helper function to get Metadata associated with this material or nullptr if there is no metadata.
+ *  Whether any metadata is generated depends on the source file format. See the
+ * @link importer_notes @endlink page for more information on every source file
+ * format. Importers that don't document any metadata don't write any.
+ * e.g. you can get information stored in Extras for glTF models
+ * @return metadata for this material
+ */
+ASSIMP_API C_STRUCT aiMetadata *aiGetMaterialMetadata(const C_STRUCT aiMaterial *pMat);
 
 // ---------------------------------------------------------------------------
 /** @brief Helper function to get all values pertaining to a particular

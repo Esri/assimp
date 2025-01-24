@@ -79,6 +79,11 @@ AI_FORCE_INLINE unsigned int aiMaterial::GetTextureCount(aiTextureType type) con
 }
 
 // ---------------------------------------------------------------------------
+AI_FORCE_INLINE C_STRUCT aiMetadata *aiMaterial::GetMetadata() const {
+    return ::aiGetMaterialMetadata(this);
+}
+
+// ---------------------------------------------------------------------------
 template <typename Type>
 AI_FORCE_INLINE aiReturn aiMaterial::Get(const char* pKey,unsigned int type,
         unsigned int idx, Type* pOut,
