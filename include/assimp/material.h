@@ -52,7 +52,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <assimp/types.h>
 
-#include <assimp/metadata.h>
+struct aiMetadata;
 
 #ifdef __cplusplus
 extern "C" {
@@ -836,12 +836,14 @@ public:
             aiTextureMapMode *mapmode = NULL) const;
 
     // -------------------------------------------------------------------
-    /** Helper function to get Metadata associated with this material or nullptr if there is no metadata.
+    /** This is ESRI runtimcore implementation to support the extras and extensions from material.
+     *
+     *  Helper function to get Metadata associated with this material or nullptr if there is no metadata.
      *  Whether any metadata is generated depends on the source file format. See the
-     * @link importer_notes @endlink page for more information on every source file
-     * format. Importers that don't document any metadata don't write any.
-     * e.g. you can get information stored in Extras and custom Extensions for materials in glTF models
-     * @return metadata for this material
+     *  @link importer_notes @endlink page for more information on every source file
+     *  format. Importers that don't document any metadata don't write any.
+     *  e.g. you can get information stored in Extras and custom Extensions for materials in glTF models
+     *  @return metadata for this material
      */
     C_STRUCT aiMetadata *GetMetadata() const;
 
@@ -969,7 +971,7 @@ public:
     /** Storage allocated */
     unsigned int mNumAllocated;
 
-    /** Metadata associated with this material or nullptr if there is no metadata.*/
+    /** Metadata associated with this material or nullptr if there is no metadata. Added by ESRI runtimecore to support Extras and Extensions */
     C_STRUCT aiMetadata *mMetaData;
 };
 

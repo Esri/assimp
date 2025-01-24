@@ -400,6 +400,8 @@ static aiMaterial *ImportMaterial(std::vector<int> &embeddedTexIdxs, Asset &r, M
             aimat->AddProperty(&emissiveStrength.emissiveStrength, 1, AI_MATKEY_EMISSIVE_INTENSITY);
         }
 
+        // This is ESRI runtimcore implementation to support the extras and extensions on material.
+        // Reading the extras and extensions follows the same pattern used for NODE.
         if (mat.customExtensions || mat.extras.HasExtras()) {
             aimat->mMetaData = new aiMetadata;
             if (mat.customExtensions) {

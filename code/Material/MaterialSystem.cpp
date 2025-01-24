@@ -49,6 +49,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assimp/ParsingUtils.h>
 #include <assimp/fast_atof.h>
 #include <assimp/material.h>
+#include <assimp/metadata.h>
 #include <assimp/types.h>
 #include <assimp/DefaultLogger.hpp>
 #include <memory>
