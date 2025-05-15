@@ -2292,9 +2292,9 @@ void ColladaParser::ReadNodeGeometry(XmlNode &node, Node *pNode) {
                             urlMat++;
 
                         s.mMatName = urlMat;
+                        ReadMaterialVertexInputBinding(instanceMatNode, s);
                         // store the association
                         instance.mMaterials[group] = s;
-                        ReadMaterialVertexInputBinding(instanceMatNode, s);
                     }
                 }
             }
