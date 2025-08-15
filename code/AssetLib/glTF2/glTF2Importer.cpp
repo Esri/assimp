@@ -241,6 +241,32 @@ static void SetMaterialTextureProperty(std::vector<int> &embeddedTexIdxs, Asset 
     }
 }
 
+void ParseExtensions(aiMetadata *metadata, const CustomExtension &extension) {
+    if (extension.mStringValue.isPresent) {
+        metadata->Add(extension.name, aiString(extension.mStringValue.value));
+    } else if (extension.mDoubleValue.isPresent) {
+        metadata->Add(extension.name, extension.mDoubleValue.value);
+    } else if (extension.mUint64Value.isPresent) {
+        metadata->Add(extension.name, extension.mUint64Value.value);
+    } else if (extension.mInt64Value.isPresent) {
+        metadata->Add(extension.name, static_cast<int32_t>(extension.mInt64Value.value));
+    } else if (extension.mBoolValue.isPresent) {
+        metadata->Add(extension.name, extension.mBoolValue.value);
+    } else if (extension.mValues.isPresent) {
+        aiMetadata val;
+        for (auto const &subExtension : extension.mValues.value) {
+            ParseExtensions(&val, subExtension);
+        }
+        metadata->Add(extension.name, val);
+    }
+}
+
+void ParseExtras(aiMetadata *metadata, const Extras &extras) {
+    for (auto const &value : extras.mValues) {
+        ParseExtensions(metadata, value);
+    }
+}
+
 static aiMaterial *ImportMaterial(std::vector<int> &embeddedTexIdxs, Asset &r, Material &mat) {
     aiMaterial *aimat = new aiMaterial();
 
@@ -376,7 +402,7 @@ static aiMaterial *ImportMaterial(std::vector<int> &embeddedTexIdxs, Asset &r, M
             aimat->AddProperty(&emissiveStrength.emissiveStrength, 1, AI_MATKEY_EMISSIVE_INTENSITY);
         }
 
-        // KHR_materials_anisotropy
+	// KHR_materials_anisotropy
         if (mat.materialAnisotropy.isPresent) {
             const MaterialAnisotropy &anisotropy = mat.materialAnisotropy.value;
 
@@ -384,6 +410,18 @@ static aiMaterial *ImportMaterial(std::vector<int> &embeddedTexIdxs, Asset &r, M
             aimat->AddProperty(&anisotropy.anisotropyRotation, 1, AI_MATKEY_ANISOTROPY_ROTATION);
 
             SetMaterialTextureProperty(embeddedTexIdxs, r, anisotropy.anisotropyTexture, aimat, AI_MATKEY_ANISOTROPY_TEXTURE);
+        }
+
+	// This is ESRI runtimcore implementation to support the extras and extensions on material.
+        // Reading the extras and extensions follows the same pattern used for NODE.
+        if (mat.customExtensions || mat.extras.HasExtras()) {
+            aimat->mMetaData = new aiMetadata;
+            if (mat.customExtensions) {
+                ParseExtensions(aimat->mMetaData, mat.customExtensions);
+            }
+            if (mat.extras.HasExtras()) {
+                ParseExtras(aimat->mMetaData, mat.extras);
+            }
         }
 
         return aimat;
@@ -1102,32 +1140,6 @@ static void BuildVertexWeightMapping(Mesh::Primitive &primitive, std::vector<std
 
 static std::string GetNodeName(const Node &node) {
     return node.name.empty() ? node.id : node.name;
-}
-
-void ParseExtensions(aiMetadata *metadata, const CustomExtension &extension) {
-    if (extension.mStringValue.isPresent) {
-        metadata->Add(extension.name, aiString(extension.mStringValue.value));
-    } else if (extension.mDoubleValue.isPresent) {
-        metadata->Add(extension.name, extension.mDoubleValue.value);
-    } else if (extension.mUint64Value.isPresent) {
-        metadata->Add(extension.name, extension.mUint64Value.value);
-    } else if (extension.mInt64Value.isPresent) {
-        metadata->Add(extension.name, static_cast<int32_t>(extension.mInt64Value.value));
-    } else if (extension.mBoolValue.isPresent) {
-        metadata->Add(extension.name, extension.mBoolValue.value);
-    } else if (extension.mValues.isPresent) {
-        aiMetadata val;
-        for (auto const &subExtension : extension.mValues.value) {
-            ParseExtensions(&val, subExtension);
-        }
-        metadata->Add(extension.name, val);
-    }
-}
-
-void ParseExtras(aiMetadata* metadata, const Extras& extras) {
-    for (auto const &value : extras.mValues) {
-        ParseExtensions(metadata, value);
-    }
 }
 
 aiNode *glTF2Importer::ImportNode(glTF2::Asset &r, glTF2::Ref<glTF2::Node> &ptr) {
