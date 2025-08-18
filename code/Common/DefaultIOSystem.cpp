@@ -120,12 +120,13 @@ bool DefaultIOSystem::Exists(const char *pFile) const {
 // ------------------------------------------------------------------------------------------------
 // Open a new file with a given path.
 IOStream *DefaultIOSystem::Open(const char *strFile, const char *strMode) {
-    ai_assert(NULL != strFile);
-    ai_assert(NULL != strMode);
+    ai_assert(strFile != nullptr);
+    ai_assert(strMode != nullptr);
 
     FILE *file = boost::nowide::fopen(strFile, strMode);
-    if (NULL == file)
-        return NULL;
+    if (!file) {
+        return nullptr;
+    }
 
     return new DefaultIOStream(file, strFile);
 }

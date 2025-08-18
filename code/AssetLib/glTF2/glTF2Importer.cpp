@@ -402,7 +402,7 @@ static aiMaterial *ImportMaterial(std::vector<int> &embeddedTexIdxs, Asset &r, M
             aimat->AddProperty(&emissiveStrength.emissiveStrength, 1, AI_MATKEY_EMISSIVE_INTENSITY);
         }
 
-	// KHR_materials_anisotropy
+        // KHR_materials_anisotropy
         if (mat.materialAnisotropy.isPresent) {
             const MaterialAnisotropy &anisotropy = mat.materialAnisotropy.value;
 
@@ -412,7 +412,7 @@ static aiMaterial *ImportMaterial(std::vector<int> &embeddedTexIdxs, Asset &r, M
             SetMaterialTextureProperty(embeddedTexIdxs, r, anisotropy.anisotropyTexture, aimat, AI_MATKEY_ANISOTROPY_TEXTURE);
         }
 
-	// This is ESRI runtimcore implementation to support the extras and extensions on material.
+        // This is ESRI runtimcore implementation to support the extras and extensions on material.
         // Reading the extras and extensions follows the same pattern used for NODE.
         if (mat.customExtensions || mat.extras.HasExtras()) {
             aimat->mMetaData = new aiMetadata;
