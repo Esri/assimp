@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2024, assimp team
+Copyright (c) 2006-2025, assimp team
 
 All rights reserved.
 
@@ -97,7 +97,7 @@ bool DefaultIOSystem::Exists(const char *pFile) const {
     if (pFile == nullptr) {
         return false;
     }
-        
+
 #ifdef _WIN32
     struct __stat64 filestat;
     if (_wstat64(Utf8ToWide(pFile).c_str(), &filestat) != 0) {
@@ -105,7 +105,9 @@ bool DefaultIOSystem::Exists(const char *pFile) const {
     }
 #else
 	struct stat statbuf;
-    stat(pFile, &statbuf);
+    if (stat(pFile, &statbuf) != 0) {
+        return false;
+    }
     // test for a regular file
     if (!S_ISREG(statbuf.st_mode)) {
         return false;
@@ -118,12 +120,13 @@ bool DefaultIOSystem::Exists(const char *pFile) const {
 // ------------------------------------------------------------------------------------------------
 // Open a new file with a given path.
 IOStream *DefaultIOSystem::Open(const char *strFile, const char *strMode) {
-    ai_assert(NULL != strFile);
-    ai_assert(NULL != strMode);
+    ai_assert(strFile != nullptr);
+    ai_assert(strMode != nullptr);
 
     FILE *file = boost::nowide::fopen(strFile, strMode);
-    if (NULL == file)
-        return NULL;
+    if (!file) {
+        return nullptr;
+    }
 
     return new DefaultIOStream(file, strFile);
 }
