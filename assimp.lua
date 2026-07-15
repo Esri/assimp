@@ -60,6 +60,7 @@ defines {
   "ASSIMP_BUILD_NO_XGL_IMPORTER",
   "ASSIMP_BUILD_NO_XX_IMPORTER",
   "ASSIMP_BUILD_NO_X_IMPORTER",
+  "ASSIMP_ENABLE_DRACO"
 }
 
 includedirs {
@@ -72,6 +73,7 @@ includedirs {
   _3RDPARTY_DIR .. "/minizip-ng",
   _3RDPARTY_DIR .. "/rapidjson/include",
   _3RDPARTY_DIR .. "/zlib-ng",
+  _3RDPARTY_DIR .. "/draco/src",
 }
 
 files {
