@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2025, assimp team
+Copyright (c) 2006-2026, assimp team
 
 All rights reserved.
 
@@ -81,11 +81,11 @@ aiReturn aiGetMaterialProperty(const aiMaterial *pMat,
         }
     }
     *pPropOut = nullptr;
+
     return AI_FAILURE;
 }
 
-namespace
-{
+namespace {
 
 // ------------------------------------------------------------------------------------------------
 // Implementation of functions "aiGetMaterialFloatArray" and "aiGetMaterialFloatFloatArray".
@@ -99,8 +99,8 @@ aiReturn GetMaterialFloatArray(const aiMaterial *pMat,
     ai_assert(pOut != nullptr);
     ai_assert(pMat != nullptr);
 
-    const aiMaterialProperty *prop;
-    aiGetMaterialProperty(pMat, pKey, type, index, (const aiMaterialProperty **)&prop);
+    const aiMaterialProperty *prop{nullptr};
+    aiGetMaterialProperty(pMat, pKey, type, index, &prop);
     if (nullptr == prop) {
         return AI_FAILURE;
     }
@@ -111,7 +111,6 @@ aiReturn GetMaterialFloatArray(const aiMaterial *pMat,
         iWrite = prop->mDataLength / sizeof(float);
         if (pMax) {
             iWrite = std::min(*pMax, iWrite);
-            ;
         }
 
         for (unsigned int a = 0; a < iWrite; ++a) {
@@ -121,9 +120,7 @@ aiReturn GetMaterialFloatArray(const aiMaterial *pMat,
         if (pMax) {
             *pMax = iWrite;
         }
-    }
-    // data is given in doubles, convert to TReal
-    else if (aiPTI_Double == prop->mType) {
+    } else if (aiPTI_Double == prop->mType) { // data is given in doubles, convert to TReal
         iWrite = prop->mDataLength / sizeof(double);
         if (pMax) {
             iWrite = std::min(*pMax, iWrite);
@@ -135,9 +132,7 @@ aiReturn GetMaterialFloatArray(const aiMaterial *pMat,
         if (pMax) {
             *pMax = iWrite;
         }
-    }
-    // data is given in ints, convert to TReal
-    else if (aiPTI_Integer == prop->mType) {
+    } else if (aiPTI_Integer == prop->mType) { // data is given in ints, convert to TReal
         iWrite = prop->mDataLength / sizeof(int32_t);
         if (pMax) {
             iWrite = std::min(*pMax, iWrite);
@@ -149,9 +144,7 @@ aiReturn GetMaterialFloatArray(const aiMaterial *pMat,
         if (pMax) {
             *pMax = iWrite;
         }
-    }
-    // a string ... read floats separated by spaces
-    else {
+    } else { // a string ... read floats separated by spaces
         if (pMax) {
             iWrite = *pMax;
         }
@@ -160,7 +153,7 @@ aiReturn GetMaterialFloatArray(const aiMaterial *pMat,
         ai_assert(prop->mDataLength >= 5);
         ai_assert(!prop->mData[prop->mDataLength - 1]);
         for (unsigned int a = 0;; ++a) {
-            cur = fast_atoreal_move<TReal>(cur, pOut[a]);
+            cur = fast_atoreal_move(cur, pOut[a]);
             if (a == iWrite - 1) {
                 break;
             }
@@ -175,6 +168,7 @@ aiReturn GetMaterialFloatArray(const aiMaterial *pMat,
             *pMax = iWrite;
         }
     }
+
     return AI_SUCCESS;
 }
 
@@ -186,7 +180,7 @@ aiReturn aiGetMaterialFloatFloatArray(const aiMaterial *pMat,
         unsigned int index,
         float *pOut,
         unsigned int *pMax) {
-    return ::GetMaterialFloatArray(pMat, pKey, type, index, pOut, pMax);
+    return GetMaterialFloatArray(pMat, pKey, type, index, pOut, pMax);
 }
 
 } // namespace
@@ -199,7 +193,7 @@ aiReturn aiGetMaterialFloatArray(const aiMaterial *pMat,
         unsigned int index,
         ai_real *pOut,
         unsigned int *pMax) {
-    return ::GetMaterialFloatArray(pMat, pKey, type, index, pOut, pMax);
+    return GetMaterialFloatArray(pMat, pKey, type, index, pOut, pMax);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -214,7 +208,7 @@ aiReturn aiGetMaterialIntegerArray(const aiMaterial *pMat,
     ai_assert(pMat != nullptr);
 
     const aiMaterialProperty *prop;
-    aiGetMaterialProperty(pMat, pKey, type, index, (const aiMaterialProperty **)&prop);
+    aiGetMaterialProperty(pMat, pKey, type, index, &prop);
     if (!prop) {
         return AI_FAILURE;
     }
@@ -306,7 +300,7 @@ aiReturn aiGetMaterialUVTransform(const aiMaterial *pMat,
         unsigned int index,
         aiUVTransform *pOut) {
     unsigned int iMax = 5;
-    return aiGetMaterialFloatArray(pMat, pKey, type, index, (ai_real *)pOut, &iMax);
+    return aiGetMaterialFloatArray(pMat, pKey, type, index, reinterpret_cast<ai_real *>(pOut), &iMax);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -318,8 +312,8 @@ aiReturn aiGetMaterialString(const aiMaterial *pMat,
         aiString *pOut) {
     ai_assert(pOut != nullptr);
 
-    const aiMaterialProperty *prop;
-    aiGetMaterialProperty(pMat, pKey, type, index, (const aiMaterialProperty **)&prop);
+    const aiMaterialProperty *prop{nullptr};
+    aiGetMaterialProperty(pMat, pKey, type, index, &prop);
     if (!prop) {
         return AI_FAILURE;
     }
@@ -394,7 +388,7 @@ aiReturn aiGetMaterialTexture(const C_STRUCT aiMaterial *mat,
     }
 
     // Determine mapping type
-    int mapping_ = static_cast<int>(aiTextureMapping_UV);
+    int mapping_ = aiTextureMapping_UV;
     aiGetMaterialInteger(mat, AI_MATKEY_MAPPING(type, index), &mapping_);
     aiTextureMapping mapping = static_cast<aiTextureMapping>(mapping_);
     if (_mapping)
@@ -425,7 +419,7 @@ aiReturn aiGetMaterialTexture(const C_STRUCT aiMaterial *mat,
     return AI_SUCCESS;
 }
 
-static const unsigned int DefaultNumAllocated = 5;
+static constexpr unsigned int DefaultNumAllocated = 5;
 
 // ------------------------------------------------------------------------------------------------
 // Construction. Actually the one and only way to get an aiMaterial instance
@@ -445,7 +439,7 @@ aiMaterial::~aiMaterial() {
 
 // ------------------------------------------------------------------------------------------------
 aiString aiMaterial::GetName() const {
-    aiString name;
+    aiString name{};
     Get(AI_MATKEY_NAME, name);
 
     return name;
@@ -516,7 +510,7 @@ aiReturn aiMaterial::AddBinaryProperty(const void *pInput,
     }
 
     // Allocate a new material property
-    std::unique_ptr<aiMaterialProperty> pcNew(new aiMaterialProperty());
+    auto pcNew = std::make_unique<aiMaterialProperty>();
 
     // .. and fill it
     pcNew->mType = pType;
@@ -578,11 +572,9 @@ aiReturn aiMaterial::AddProperty(const aiString *pInput,
 uint32_t Assimp::ComputeMaterialHash(const aiMaterial *mat, bool includeMatName /*= false*/) {
     uint32_t hash = 1503; // magic start value, chosen to be my birthday :-)
     for (unsigned int i = 0; i < mat->mNumProperties; ++i) {
-        aiMaterialProperty *prop;
-
         // Exclude all properties whose first character is '?' from the hash
         // See doc for aiMaterialProperty.
-        prop = mat->mProperties[i];
+        const aiMaterialProperty *prop = mat->mProperties[i];
         if (nullptr != prop && (includeMatName || prop->mKey.data[0] != '?')) {
 
             hash = SuperFastHash(prop->mKey.data, (unsigned int)prop->mKey.length, hash);
@@ -626,7 +618,7 @@ void aiMaterial::CopyPropertyList(aiMaterial *const pcDest,
     }
 
     for (unsigned int i = iOldNum; i < pcDest->mNumProperties; ++i) {
-        aiMaterialProperty *propSrc = pcSrc->mProperties[i];
+        const aiMaterialProperty *propSrc = pcSrc->mProperties[i];
 
         // search whether we have already a property with this name -> if yes, overwrite it
         aiMaterialProperty *prop;
